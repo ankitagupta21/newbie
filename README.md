@@ -1,5 +1,3 @@
-Team name- Newbie
-
 Project demonstration is showed in the below YouTube Link 
 Youtibe video link-
 https://youtu.be/s7hxytqKG_A
