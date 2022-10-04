@@ -89,23 +89,13 @@
   margin-bottom: 50px;
 }
 
+.section .image{
+  float:left;
+}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  .ftco-footer {
+.ftco-footer {
     font-size: 16px;
     padding: 7em 0;
     background: #252525;
