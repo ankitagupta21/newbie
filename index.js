@@ -5,6 +5,7 @@ const { dirname } = require("path");
 const mongoose = require("mongoose");
 const md5 = require("md5");
 const ejs = require("ejs");
+const e = require("express");
 
 
 const app = express();
@@ -26,7 +27,6 @@ const foodSchema = new mongoose.Schema({
   date: String,
   noOfPlates: Number,
 });
-
 const donarSchema = new mongoose.Schema({
   name: String,
   username: {
@@ -42,7 +42,6 @@ const donarSchema = new mongoose.Schema({
   gender: String,
   donations: [foodSchema],
 });
-
 const volunteerSchema = new mongoose.Schema({
   name: String,
   idNumber: String,
@@ -56,10 +55,7 @@ const feedbackSchema = new mongoose.Schema({
   email: String,
   exp: String
 });
-
-
 const Donar = mongoose.model("Donar", donarSchema);
-
 const Volunteer = mongoose.model("Volunteer", volunteerSchema);
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 
@@ -84,59 +80,15 @@ app.get("/contact", function(req, res) {
   res.sendFile(__dirname + "/contact.html")
 })
 app.get("/RegisterLoginDonar", function(req, res) {
-  res.sendFile(__dirname + "/p1.html");
+  res.render("p1", { warning: '' });
 })
 app.post("/RegisterLoginDonar", function(req, res) {
-  if (req.body.button === "Reset") {
-    const email = req.body.emailId;
-    const password = md5(req.body.password);
-    Donar.findOneAndUpdate({ email: email }, { password: password }, function(err, foundUser) {
-      if (!foundUser) {
-        res.redirect("/ResetPasswordDonar")
-      }
-    })
-  }
-  res.sendFile(__dirname + "/p1.html");
-})
-
-app.get("/RegisterLoginVolunteer", function(req, res) {
-  res.sendFile(__dirname + "/volunteer.html");
-})
-app.post("/RegisterLoginVolunteer", function(req, res) {
-  if (req.body.button === "Reset") {
-    const idNumber = req.body.idNumber;
-    const password = md5(req.body.password);
-    Volunteer.findOneAndUpdate({ idNumber: idNumber }, { password: password }, function(err, foundUser) {
-      if (!foundUser) {
-        res.redirect("/ResetPasswordVolunteer")
-      }
-    })
-  }
-  res.sendFile(__dirname + "/volunteer.html");
-})
-
-app.get("/ResetPasswordDonar", function(req, res) {
-  res.sendFile(__dirname + "/resetPassDonar.html");
-})
-
-app.get("/ResetPasswordVolunteer", function(req, res) {
-  res.sendFile(__dirname + "/resetPassVol.html");
-})
-
-app.get("/finaldonate/:username", function(req, res) {
-  res.sendFile(__dirname + "/finaldonate.html")
-})
-app.post("/finaldonate/:username", function(req, res) {
-  const username = req.params.username
-  const url = "/foodDetails/" + username
-  res.redirect(url);
-})
-app.post("/finaldonate", function(req, res) {
   if (req.body.button === "Register") {
     const email = req.body.emailId;
     Donar.findOne({ email: email }, function(err, foundUser) {
-      if (foundUser) {
-        res.redirect("/RegisterLoginDonar");
+      // console.log(foundUser);
+      if (err) {
+        res.render("p1", { warning: "User already registered" })
       }
       else {
         const donar = new Donar({
@@ -150,14 +102,15 @@ app.post("/finaldonate", function(req, res) {
         Donar.create(donar, function(err) {
           if (err) {
             console.log(err);
-            res.sendFile(__dirname + "p1.html")
+            res.render("p1", { warning: "User already registered" })
+          }
+          else {
+            const username = req.body.username
+            const url = "/finaldonate/" + username
+            res.redirect(url);
           }
         });
-        const username = req.body.username
-        const url = "/finaldonate/" + username
 
-
-        res.redirect(url);
       }
     })
   }
@@ -172,26 +125,44 @@ app.post("/finaldonate", function(req, res) {
           res.redirect(url);
         }
         else {
-          res.redirect("/RegisterLoginDonar");
+          res.render("p1", { warning: "Wrong Password" });
         }
       }
       else {
-        res.redirect("/RegisterLoginDonar");
+        res.render("p1", { warning: "User not found" });
       }
     })
 
   }
   else if (req.body.button == "Forgot Password?") {
-    res.redirect("/ResetPasswordDonar");
+    res.render("resetPassDonar", { warning: "" });
+  }
+  else if (req.body.button === "Reset") {
+    const email = req.body.emailId;
+    const password = md5(req.body.password);
+    Donar.findOneAndUpdate({ email: email }, { password: password }, function(err, foundUser) {
+      if (!foundUser) {
+        res.render("resetPassDonar", { warning: "Email not found." })
+      }
+      else {
+        res.render("p1", { warning: "Password changed succesfully!! Login again." });
+      }
+    })
+  }
+  else {
+    res.render("p1", { warning: "" });
   }
 })
 
-app.post("/donations", function(req, res) {
+app.get("/RegisterLoginVolunteer", function(req, res) {
+  res.render("volunteerLogin", { warning: "" });
+})
+app.post("/RegisterLoginVolunteer", function(req, res) {
   if (req.body.button === "Register") {
     const idNumber = req.body.idNumber;
     Volunteer.findOne({ idNumber: idNumber }, function(err, foundUser) {
       if (foundUser) {
-        res.redirect("/RegisterLoginVolunteer");
+        res.render("volunteerLogin", { warning: "User already exists. Login with that email id." });
       }
       else {
         const volunteer = new Volunteer({
@@ -206,7 +177,7 @@ app.post("/donations", function(req, res) {
             console.log(err);
           }
         });
-        res.render("volunteer", { name: [] });
+        res.redirect("/donations");
       }
     })
   }
@@ -216,22 +187,50 @@ app.post("/donations", function(req, res) {
     Volunteer.findOne({ idNumber: idNumber }, function(err, foundUser) {
       if (foundUser) {
         if (foundUser.password === password) {
-          res.render("volunteer", { name: [] })
+          res.redirect("/donations")
         }
         else {
-          res.redirect("/RegisterLoginVolunteer");
+          res.render("volunteerLogin", { warning: "Wrong password. Login with correct password." });
         }
       }
       else {
-        res.redirect("/RegisterLoginVolunteer");
+        res.render("volunteerLogin", { warning: "User does exists. Register if new user." });
       }
     })
 
   }
   else if (req.body.button === "Forgot Password?") {
-    res.redirect("/ResetPasswordVolunteer");
+    res.render("resetPassVol", { warning: "" })
   }
-  else if (req.body.button === "Submit") {
+  else if (req.body.button === "Reset") {
+    const idNumber = req.body.idNumber;
+    const password = md5(req.body.password);
+    Volunteer.findOneAndUpdate({ idNumber: idNumber }, { password: password }, function(err, foundUser) {
+      if (!foundUser) {
+        res.render("resetPassVol", { warning: "Id number not found" })
+      }
+      else {
+        res.render("volunteerLogin", { warning: "Password changed successfully." });
+      }
+    })
+  }
+  else {
+    res.render("volunteerLogin", { warning: "" });
+  }
+})
+app.get("/finaldonate/:username", function(req, res) {
+  res.sendFile(__dirname + "/finaldonate.html")
+})
+app.post("/finaldonate/:username", function(req, res) {
+  const username = req.params.username
+  const url = "/foodDetails/" + username
+  res.redirect(url);
+})
+app.get("/donations", function(req, res) {
+  res.render("volunteer", { name: [] })
+})
+app.post("/donations", function(req, res) {
+  if (req.body.button === "Submit") {
     const City = req.body.city
     const Date = req.body.date
     const from = req.body.startTime
@@ -242,13 +241,11 @@ app.post("/donations", function(req, res) {
       }
       else {
         let cards = []
-        console.log(itms)
         for (let i = 0; i < itms.length; i++) {
           const donation = itms[i].donations
           const username = itms[i].name
           const phoneNo = itms[i].phoneNo
           for (let j = 0; j < donation.length; j++) {
-            console.log(donation[j].city == City)
             if (donation[j].city == City && donation[j].date == Date && (donation[j].time >= from && donation[j].time <= to)) {
               cards.push({
                 name: username,
@@ -300,7 +297,6 @@ app.post("/foodDetails/:username", function(req, res) {
 })
 
 app.post("/contact", function(req, res) {
-  console.log(req.body);
   const feedback = new Feedback({
     name: req.body.name,
     email: req.body.email,
@@ -311,9 +307,9 @@ app.post("/contact", function(req, res) {
   Feedback.create(feedback, function(err) {
     if (err) {
       console.log(err);
-      res.redirect("/contact");
     }
   });
+  res.redirect("/contact");
 })
 // app.listen(3000,function(){
 //     console.log("app is started on server 3000");
