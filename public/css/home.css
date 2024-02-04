@@ -344,3 +344,9 @@ m5 span {
 .xyz .text{
     color:rgb(222, 219, 219);
 }
+
+.profile{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+}

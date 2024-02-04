@@ -57,7 +57,7 @@
 			<div class="row no-gutters slider-text align-items-center justify-content-center"
 				data-scrollax-parent="true">
 				<div class="col-md-7 ftco-animate text-center" data-scrollax=" properties: { translateY: '70%' }">
-					<h1 class="m4" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Cutting food waste is a delicious way of saving money, helping to feed the world and protect the planet.</h1>
+					<h1 class="m4" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Together, We can solve hunger.</h1>
 					<p class="m5" data-scrollax="properties: { translateY: '30%', opacity: 1.6 }">Created by
 						<span><u>Newbie</u></span>
 					</p>
@@ -191,12 +191,17 @@ We will like you to volunteer with us, provide us your information below.</p>
 						<div class="d-flex mb-4">
 							<div class="img" style="background-image: url(images/person_1.jpg);"></div>
 							<div class="info ml-4">
-								<h3><%=element.name%></h3>
-								<span class="position"><%=element.email%></span>
+								<h4><img src="images/profile_image.png" class="profile">  <%=element.name%></h4>
 								<div class="text">
-									<p>Rating: <span><%=element.val%></span></p>
+									<p>
+										<% if(element.val==1){ %> <span><img src="images/1_stars.jpg"></span>
+										<% } else if(element.val==2){ %> <span><img src="images/2_stars.jpg"></span>
+										<% } else if(element.val==3){ %> <span><img src="images/3_stars.jpg"></span> 
+										<% } else if(element.val==4){ %> <span><img src="images/4_stars.jpg"></span>
+										<% } else { %> <span><img src="images/5_stars.jpg"></span> <% } %>
+									</p>
 								</div>
-                                <div class="text">
+                <div class="text">
 									<p>Experience: <span><%=element.exp%></span></p>
 								</div>
 							</div>
